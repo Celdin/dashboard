@@ -12,5 +12,6 @@ public class Main {
 		
 		du.addProjet("Dupond", "https://github.com/Celdin/dashboard.git");
 		
+		connection.connect("Dupond", "Dupont");
 	}
 }
