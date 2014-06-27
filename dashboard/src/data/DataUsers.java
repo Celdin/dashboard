@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import domain.User;
@@ -18,11 +19,10 @@ public class DataUsers {
 	
 	public DataUsers() {
 		bd = new DataBase();
+		users= new ArrayList<User>();;
 		for(String s : bd.getListUser()){
 			User user = new User(s);
 			try {
-				FileOutputStream fos = new FileOutputStream(new File(s));
-				fos.close();
 				DataInputStream dis = new DataInputStream(new FileInputStream(new File(s)));
 				while(dis.available() != 0){
 					String line = dis.readLine();
@@ -48,11 +48,11 @@ public class DataUsers {
 			if(u.getUserName().equals(pseudo)){
 				try {
 					DataOutputStream dos = new DataOutputStream(new FileOutputStream(new File(pseudo)));
-					dos.writeChars(projet);
+					for(String p : u.getProjets())
+						dos.write((p + "\n").getBytes());
+					dos.write((projet + "\n").getBytes());
 					dos.close();
-					users.remove(u);
 					u.addProjet(projet);
-					users.add(u);
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
 				} catch (IOException e) {

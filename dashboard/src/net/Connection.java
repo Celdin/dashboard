@@ -12,6 +12,10 @@ public class Connection {
 		this.conecte = null;
 	}
 	
+	public User getUser() {
+		return conecte;
+	}
+
 	public boolean isConecte(){
 		return conecte!=null;
 	}

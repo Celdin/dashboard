@@ -28,4 +28,8 @@ public class User {
 	public void addProjet(String projet) {
 		projets.add(projet);
 	}
+	@Override
+	public String toString() {
+		return "User : " + userName + " Projet : " + projets + "\n";
+	}
 }

@@ -20,8 +20,6 @@ public class DataBase {
 		super();
 		users = new ArrayList<User>();
 		try {
-			FileOutputStream fos = new FileOutputStream(new File(fileName));
-			fos.close();
 			DataInputStream dis = new DataInputStream(new FileInputStream(new File(fileName)));
 			while(dis.available() != 0){
 				String line = dis.readLine();
@@ -40,7 +38,7 @@ public class DataBase {
 	public boolean verification(String pseudo,String password){
 		User user = new User(pseudo, password);
 		for(User u : users)
-			if(u.equals(user))
+			if(u.pseudo.equals(pseudo) && u.mdp.equals(password))
 				return true;
 		return false;
 	}
@@ -48,7 +46,9 @@ public class DataBase {
 	public void newUser(String pseudo,String password){
 		try {
 			DataOutputStream dos = new DataOutputStream(new FileOutputStream(new File(fileName)));
-			dos.writeChars(pseudo + " " + password);
+			for(User u : users)
+				dos.write(new String(u.pseudo + " " + u.mdp + "\n").getBytes());
+			dos.write(new String(pseudo + " " + password + "\n").getBytes());
 			dos.close();
 			users.add(new User(pseudo, password));
 		} catch (FileNotFoundException e) {
@@ -56,7 +56,6 @@ public class DataBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
 	}
 	
 	public List<String> getListUser(){

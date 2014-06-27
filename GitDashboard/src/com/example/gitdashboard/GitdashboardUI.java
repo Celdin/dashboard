@@ -1,13 +1,14 @@
 package com.example.gitdashboard;
 
+import java.util.HashMap;
+
 import javax.servlet.annotation.WebServlet;
 
-import com.google.gwt.thirdparty.javascript.jscomp.parsing.parser.trees.SetAccessorTree;
+import com.example.gitdashboard.domain.User;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.data.util.converter.DefaultConverterFactory;
-import com.vaadin.navigator.Navigator;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.shared.ui.label.ContentMode;
@@ -17,6 +18,7 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.NativeButton;
 import com.vaadin.ui.PasswordField;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
@@ -34,6 +36,7 @@ public class GitdashboardUI extends UI {
 	private CssLayout root = new CssLayout();
 	private CssLayout repo = new CssLayout();
 	private boolean estConecte = false;
+	private UserManager user;
 
 	@WebServlet(value = "/*", asyncSupported = true)
 	@VaadinServletConfiguration(productionMode = false, ui = GitdashboardUI.class)
@@ -48,6 +51,7 @@ public class GitdashboardUI extends UI {
 	@Override
 	protected void init(VaadinRequest request) {
 		getSession().setConverterFactory(new DefaultConverterFactory());
+		user = new UserManager();
 		setContent(root);
 		
 		root.setSizeFull();
@@ -89,8 +93,24 @@ public class GitdashboardUI extends UI {
 								addStyleName("sidebar");
 								setMargin(true);
 								setHeight("10000px");
-								TextField newRepo = new TextField("Nouveaux Repository");
-								addComponent(newRepo);
+								addComponent(new HorizontalLayout(){
+									{
+										final TextField newRepo = new TextField("Nouveaux Repository");
+										addComponent(newRepo);
+										Button add = new NativeButton("+");
+										addComponent(add);
+										setComponentAlignment(add, Alignment.BOTTOM_RIGHT);
+										add.addClickListener(new Button.ClickListener() {
+											
+											@Override
+											public void buttonClick(ClickEvent event) {
+												UserManager.saveRepository(newRepo.getValue());
+												newRepo.setValue("");
+												refrechRepo();
+											}
+										});
+									}
+								});
 								addComponent(repo);
 								setExpandRatio(repo, 1);
 							}
@@ -115,6 +135,8 @@ public class GitdashboardUI extends UI {
 				
 				@Override
 				public void buttonClick(ClickEvent event) {
+					repo.removeAllComponents();
+					UserManager.user = new User();
 					estConecte = false;
 					viewLogin(loger);
 				}
@@ -133,10 +155,8 @@ public class GitdashboardUI extends UI {
 
 				@Override
 				public void buttonClick(ClickEvent event) {
-					if (username.getValue() != null
-	                        && username.getValue().equals("toto")
-	                        && password.getValue() != null
-	                        && password.getValue().equals("tata")){
+					if (UserManager.connect(username.getValue(), password.getValue())){
+						refrechRepo();
 						estConecte = true;
 						viewLogin(loger);
 					}
@@ -144,6 +164,34 @@ public class GitdashboardUI extends UI {
 			});
 			loger.setComponentAlignment(signin, Alignment.MIDDLE_RIGHT);
 		}
+	}
+
+	private void refrechRepo() {
+		repo.removeAllComponents();
+		repo.addComponent(new VerticalLayout(){
+			{
+				for(final String url : UserManager.user.getRepos()){
+					addComponent(new HorizontalLayout(){
+						{
+							Button del = new NativeButton("-");
+							addComponent(del);
+							del.addClickListener(new Button.ClickListener() {
+								
+								@Override
+								public void buttonClick(ClickEvent event) {
+									UserManager.deleteRepository(url);
+									refrechRepo();
+								}
+							});
+							Button repository = new NativeButton(url.substring(url.lastIndexOf("/")+1));
+							repository.setSizeFull();
+							addComponent(repository);
+						}
+					});
+
+				}
+			}
+		});
 	}
 
 }
