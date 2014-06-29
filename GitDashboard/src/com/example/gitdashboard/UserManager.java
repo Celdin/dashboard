@@ -25,7 +25,6 @@ public class UserManager {
 				List <String> rep = new ArrayList<String>();
 				rep = getRepository(result.getInt(result.findColumn("id")));
 				user = new User(login, rep);
-				System.out.println(user.getRepos());
 				bd.close();
 				return true;
 			}

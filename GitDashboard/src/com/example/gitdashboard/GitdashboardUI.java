@@ -1,9 +1,11 @@
 package com.example.gitdashboard;
 
-import java.util.HashMap;
-
 import javax.servlet.annotation.WebServlet;
 
+import com.example.gitdashboard.chart.ViewIssue;
+import com.example.gitdashboard.chart.ViewIssueByStates;
+import com.example.gitdashboard.chart.ViewVelocityProject;
+import com.example.gitdashboard.chart.ViewVelocityProjectByContributor;
 import com.example.gitdashboard.domain.User;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
@@ -11,10 +13,12 @@ import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.data.util.converter.DefaultConverterFactory;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
+import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
@@ -39,7 +43,7 @@ public class GitdashboardUI extends UI {
 	private UserManager user;
 
 	@WebServlet(value = "/*", asyncSupported = true)
-	@VaadinServletConfiguration(productionMode = false, ui = GitdashboardUI.class)
+	@VaadinServletConfiguration(productionMode = false, ui = GitdashboardUI.class,widgetset="com.example.gitdashboard.MyWidgetSet")
 	public static class Servlet extends VaadinServlet {
 
 		/**
@@ -85,15 +89,30 @@ public class GitdashboardUI extends UI {
 				});
 				//body
 				addComponent(new HorizontalLayout(){
+					/**
+					 * 
+					 */
+					private static final long serialVersionUID = 1L;
+
 					{
 						addStyleName("body");
 						//sidebare
 						addComponent(new VerticalLayout(){
+							/**
+							 * 
+							 */
+							private static final long serialVersionUID = 1L;
+
 							{
 								addStyleName("sidebar");
 								setMargin(true);
 								setHeight("10000px");
 								addComponent(new HorizontalLayout(){
+									/**
+									 * 
+									 */
+									private static final long serialVersionUID = 1L;
+
 									{
 										final TextField newRepo = new TextField("Nouveaux Repository");
 										addComponent(newRepo);
@@ -102,6 +121,11 @@ public class GitdashboardUI extends UI {
 										setComponentAlignment(add, Alignment.BOTTOM_RIGHT);
 										add.addClickListener(new Button.ClickListener() {
 											
+											/**
+											 * 
+											 */
+											private static final long serialVersionUID = 1L;
+
 											@Override
 											public void buttonClick(ClickEvent event) {
 												UserManager.saveRepository(newRepo.getValue());
@@ -119,7 +143,6 @@ public class GitdashboardUI extends UI {
 		                addComponent(content);
 		                content.setSizeFull();
 		                content.addStyleName("view-content");
-		                setExpandRatio(content, 1);
 					}
 				});
 			}
@@ -133,6 +156,11 @@ public class GitdashboardUI extends UI {
 			loger.addComponent(deconecter);
 			deconecter.addClickListener(new Button.ClickListener() {
 				
+				/**
+				 * 
+				 */
+				private static final long serialVersionUID = 1L;
+
 				@Override
 				public void buttonClick(ClickEvent event) {
 					repo.removeAllComponents();
@@ -153,6 +181,11 @@ public class GitdashboardUI extends UI {
 			loger.addComponent(signin);
 			signin.addClickListener(new Button.ClickListener() {
 
+				/**
+				 * 
+				 */
+				private static final long serialVersionUID = 1L;
+
 				@Override
 				public void buttonClick(ClickEvent event) {
 					if (UserManager.connect(username.getValue(), password.getValue())){
@@ -169,14 +202,29 @@ public class GitdashboardUI extends UI {
 	private void refrechRepo() {
 		repo.removeAllComponents();
 		repo.addComponent(new VerticalLayout(){
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
 			{
 				for(final String url : UserManager.user.getRepos()){
 					addComponent(new HorizontalLayout(){
+						/**
+						 * 
+						 */
+						private static final long serialVersionUID = 1L;
+
 						{
 							Button del = new NativeButton("-");
 							addComponent(del);
 							del.addClickListener(new Button.ClickListener() {
 								
+								/**
+								 * 
+								 */
+								private static final long serialVersionUID = 1L;
+
 								@Override
 								public void buttonClick(ClickEvent event) {
 									UserManager.deleteRepository(url);
@@ -184,8 +232,20 @@ public class GitdashboardUI extends UI {
 								}
 							});
 							Button repository = new NativeButton(url.substring(url.lastIndexOf("/")+1));
-							repository.setSizeFull();
 							addComponent(repository);
+							repository.setWidth("100%");;
+							repository.addClickListener(new Button.ClickListener() {
+								
+								/**
+								 * 
+								 */
+								private static final long serialVersionUID = 1L;
+
+								@Override
+								public void buttonClick(ClickEvent event) {
+									updateMainContent(url);
+								}
+							});
 						}
 					});
 
@@ -193,5 +253,55 @@ public class GitdashboardUI extends UI {
 			}
 		});
 	}
+	
+	private void updateMainContent(final String url){
+		content.removeAllComponents();
+		content.addComponent(new HorizontalLayout(){
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			{
+				setSizeFull();
+		        setMargin(new MarginInfo(true, true, false, true));
+		        setSpacing(true);
+                addStyleName("view-content");
+				addComponent(new VerticalLayout(){
+					/**
+					 * 
+					 */
+					private static final long serialVersionUID = 1L;
+
+					{
+				        setSpacing(true);
+						addComponent(createPanel(new ViewIssue(url)));
+				        addComponent(createPanel(new ViewIssueByStates(url)));
+					}
+				});
+				addComponent(new VerticalLayout(){
+					/**
+					 * 
+					 */
+					private static final long serialVersionUID = 1L;
+
+					{
+				        setSpacing(true);
+						addComponent(createPanel(new ViewVelocityProject(url)));
+				        addComponent(createPanel(new ViewVelocityProjectByContributor(url)));
+					}
+				});
+			}
+		});
+	}
+	
+	private CssLayout createPanel(Component content) {
+        CssLayout panel = new CssLayout();
+        panel.addStyleName("layout-panel");
+        panel.setSizeFull();
+
+        panel.addComponent(content);
+        return panel;
+    }
 
 }
