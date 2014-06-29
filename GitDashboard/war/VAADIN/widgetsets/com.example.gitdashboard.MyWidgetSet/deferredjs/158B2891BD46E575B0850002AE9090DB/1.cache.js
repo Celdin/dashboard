@@ -1,0 +1,1 @@
+$wnd.com_example_gitdashboard_MyWidgetSet.runAsyncCallback1('Obb(1606,1,nDd);_.nc=function pcc(){e1b((!_0b&&(_0b=new f1b),_0b),this.b.e)};ypd(ai)(1);\n//# sourceURL=com.example.gitdashboard.MyWidgetSet-1.js\n')

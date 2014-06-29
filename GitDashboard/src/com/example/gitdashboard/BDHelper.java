@@ -6,10 +6,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+/**
+ * @author Sylvain
+ *
+ * Class servant à la connexion/déconnexion à la base de données.
+ * Elle permet également d'exécuter des requêtes SQL.
+ */
 public class BDHelper {
 	private Connection connection;
 	private Statement statement;
 	
+	/**
+	 * Constructeur permettant la connexion
+	 */
 	public BDHelper() {
 		try {
 		    Class.forName("com.mysql.jdbc.Driver");
@@ -23,6 +32,9 @@ public class BDHelper {
 		}
 	}
 	
+	/**
+	 * fermeture de la base de données
+	 */
 	public void close(){
 		try {
 			connection.close();
@@ -32,6 +44,11 @@ public class BDHelper {
 		}
 	}
 	
+	/**
+	 * Exécute une requête pour récupérer des données dans la base 
+	 * @param query
+	 * @return le résultat de la requête
+	 */
 	public ResultSet query(String query){
 		ResultSet resultat = null;
 		try {
@@ -42,6 +59,10 @@ public class BDHelper {
 		return resultat;
 	}
 
+	/**
+	 * Exécute une requête pour modifier des données dans la base 
+	 * @param query
+	 */
 	public void queryUpdate(String query) {
 		try {
 			statement.executeUpdate(query);

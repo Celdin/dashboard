@@ -28,6 +28,12 @@ import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
+/**
+ * @author Sylvain
+ * 
+ * La classe principale:
+ * Elle permet d'afficher l'interface web de l'application.
+ */
 @Theme("dashboard")
 @Title("Dashboard")
 public class GitdashboardUI extends UI {
@@ -42,6 +48,10 @@ public class GitdashboardUI extends UI {
 	private boolean estConecte = false;
 	private UserManager user;
 
+	/**
+	 * @author Sylvain
+	 * Servlet de gestion de l'application.
+	 */
 	@WebServlet(value = "/*", asyncSupported = true)
 	@VaadinServletConfiguration(productionMode = false, ui = GitdashboardUI.class,widgetset="com.example.gitdashboard.MyWidgetSet")
 	public static class Servlet extends VaadinServlet {
@@ -52,6 +62,9 @@ public class GitdashboardUI extends UI {
 		private static final long serialVersionUID = 1L;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.vaadin.ui.UI#init(com.vaadin.server.VaadinRequest)
+	 */
 	@Override
 	protected void init(VaadinRequest request) {
 		getSession().setConverterFactory(new DefaultConverterFactory());
@@ -63,6 +76,9 @@ public class GitdashboardUI extends UI {
 		buildMainView();
 	}
 
+	/**
+	 * Fonction permettant de construire la vue de l'interface web 
+	 */
 	private void buildMainView() {
 		root.addComponent(new VerticalLayout() {
 			private static final long serialVersionUID = 1L;
@@ -141,13 +157,16 @@ public class GitdashboardUI extends UI {
 						});
 						// Content
 		                addComponent(content);
-		                content.setSizeFull();
-		                content.addStyleName("view-content");
 					}
 				});
 			}
 		});
 	}
+	
+	/**
+	 * Construit la vue du loger. 
+	 * @param loger l'emplacement du loger.
+	 */
 	private void viewLogin(final HorizontalLayout loger){
 		loger.removeAllComponents();
 		if (estConecte) {
@@ -199,6 +218,9 @@ public class GitdashboardUI extends UI {
 		}
 	}
 
+	/**
+	 * Construit et met à jour la vue de la liste des répertoires github.
+	 */
 	private void refrechRepo() {
 		repo.removeAllComponents();
 		repo.addComponent(new VerticalLayout(){
@@ -254,6 +276,10 @@ public class GitdashboardUI extends UI {
 		});
 	}
 	
+	/**
+	 * Construit et met à jour la vue des statistiques par projet.
+	 * @param url L'URL du projet dont il faut afficher les statistiques.
+	 */
 	private void updateMainContent(final String url){
 		content.removeAllComponents();
 		content.addComponent(new HorizontalLayout(){
@@ -261,9 +287,7 @@ public class GitdashboardUI extends UI {
 			 * 
 			 */
 			private static final long serialVersionUID = 1L;
-
 			{
-				setSizeFull();
 		        setMargin(new MarginInfo(true, true, false, true));
 		        setSpacing(true);
                 addStyleName("view-content");
@@ -295,11 +319,18 @@ public class GitdashboardUI extends UI {
 		});
 	}
 	
+	/**
+	 * place Le graphique passé en paramètre dans un joli cadre.
+	 * @param Le graphique
+	 * @return Le rendue propre
+	 */
 	private CssLayout createPanel(Component content) {
         CssLayout panel = new CssLayout();
         panel.addStyleName("layout-panel");
-        panel.setSizeFull();
-
+        panel.setWidth("50%");
+        panel.setHeight("50%");
+        setWidth("100%");
+        setHeight("100%");
         panel.addComponent(content);
         return panel;
     }
