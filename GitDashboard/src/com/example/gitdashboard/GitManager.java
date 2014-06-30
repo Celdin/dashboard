@@ -201,7 +201,7 @@ public class GitManager{
 	
 	/**
 	 * @param url
-	 * @return le nombre de commit en fonction du temps (commit/jours).
+	 * @return le nombre d'issues en fonction du temps (issues/jours).
 	 */
 	public List<DataSeries> getProjectVelocity(List<String> urls){
 		List<DataSeries> resultats = new ArrayList<DataSeries>();
@@ -226,7 +226,7 @@ public class GitManager{
 	
 	/**
 	 * @param url
-	 * @return une liste de issue en fonction du contributeur pour chaque projet
+	 * @return une liste des issues en fonction des contributeurs pour chaque projet
 	 */
 	public List<DataSeries> getProjectVelocityByCommiter(ArrayList<String> urls){
 		List<DataSeries> resultats = new ArrayList<DataSeries>();

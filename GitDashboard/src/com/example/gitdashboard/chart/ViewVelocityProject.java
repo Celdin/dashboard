@@ -17,7 +17,7 @@ public class ViewVelocityProject extends Chart{
 	
 	/**
 	 * le graphique "La vélocitée du projet"
-	 * @param url
+	 * @param urls
 	 */
 	public ViewVelocityProject(ArrayList<String> urls){
 		setCaption("La vélocitée du projet");

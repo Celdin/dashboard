@@ -185,6 +185,7 @@ public class GitdashboardUI extends UI {
 				@Override
 				public void buttonClick(ClickEvent event) {
 					repo.removeAllComponents();
+					content.removeAllComponents();
 					UserManager.user = new User();
 					estConecte = false;
 					viewLogin(loger);
@@ -279,8 +280,8 @@ public class GitdashboardUI extends UI {
 	}
 	
 	/**
-	 * Construit et met à jour la vue des statistiques par projet.
-	 * @param url L'URL du projet dont il faut afficher les statistiques.
+	 * Construit et met à jour la vue des statistiques des projets.
+	 * @param url L'URL des projets dont il faut afficher les statistiques.
 	 */
 	private void updateMainContent(final ArrayList<String> url){
 		content.removeAllComponents();
