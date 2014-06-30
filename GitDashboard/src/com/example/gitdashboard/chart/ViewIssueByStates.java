@@ -15,7 +15,7 @@ public class ViewIssueByStates extends Chart{
 	
 	/**
 	 * Le graphique "La répartition des issues par état"
-	 * @param urls
+	 * @param urls les url des projets
 	 */
 	public ViewIssueByStates(ArrayList<String> urls){
 		setCaption("La répartition des issues par état");

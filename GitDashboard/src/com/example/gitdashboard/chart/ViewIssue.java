@@ -17,7 +17,7 @@ public class ViewIssue extends Chart{
 	
 	/**
 	 * Le graphique "Nombre d'issues ouvertes"
-	 * @param urls
+	 * @param urls les url des projets
 	 */
 	public ViewIssue(ArrayList<String> urls){
 		setCaption("Nombre d'issues ouvertes");
