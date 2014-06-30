@@ -1,5 +1,6 @@
 package com.example.gitdashboard;
 
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -8,6 +9,7 @@ import java.util.List;
 import retrofit.RestAdapter;
 import retrofit.http.GET;
 import retrofit.http.Path;
+import retrofit.http.Query;
 
 import com.vaadin.addon.charts.model.DataSeries;
 import com.vaadin.addon.charts.model.DataSeriesItem;
@@ -26,25 +28,13 @@ public class GitManager{
 	private class Issue implements Comparable<Issue>{
 		Date created_at;
 		Date closed_at;
+		User user;
 		@Override
 		public int compareTo(Issue arg0) {
 			return this.created_at.compareTo(arg0.created_at);
 		}
-	}
-	
-	/**
-	 * @author Sylvain
-	 * Classe pour récupérer les "Commit" d'un projet.
-	 *
-	 */
-	private class CommitData{
-		private Commit commit;
-		public class Commit{
-			private Committer committer;
-			public class Committer{
-				String name;
-				Date date;
-			}
+		private class User{
+			String login;
 		}
 	}
 	
@@ -54,10 +44,11 @@ public class GitManager{
 	 * Interface git servant à la récupération de toutes les "Issues" d'un projet.
 	 */
 	interface AllIssues {
-		@GET("/repos/{owner}/{repo}/issues?state=all")
+		@GET("/repos/{owner}/{repo}/issues?state=all&per_page=100")
 		List<Issue> issues(
 			@Path("owner")	String owner,
-			@Path("repo") String repo
+			@Path("repo") String repo,
+			@Query("page") Integer page
 				);
 		
 	}
@@ -68,10 +59,11 @@ public class GitManager{
 	 * Interface git servant à la récupération de toutes les "Issues" ouverte d'un projet.
 	 */
 	interface IssuesOpen {
-		@GET("/repos/{owner}/{repo}/issues?state=open")
+		@GET("/repos/{owner}/{repo}/issues?state=open&per_page=100")
 		List<Issue> issues(
 			@Path("owner")	String owner,
-			@Path("repo") String repo
+			@Path("repo") String repo,
+			@Query("page") Integer page
 				);
 		
 	}
@@ -82,24 +74,11 @@ public class GitManager{
 	 * Interface git servant à la récupération de toutes les "Issues" fermée d'un projet.
 	 */
 	interface IssuesClose {
-		@GET("/repos/{owner}/{repo}/issues?state=close")
+		@GET("/repos/{owner}/{repo}/issues?state=close&per_page=100")
 		List<Issue> issues(
 			@Path("owner")	String owner,
-			@Path("repo") String repo
-				);
-		
-	}
-	
-	/**
-	 * @author Sylvain
-	 *
-	 * Interface git servant à la récupération de toutes les "Commit" d'un projet.
-	 */
-	interface AllCommits {
-		@GET("/repos/{owner}/{repo}/commits")
-		List<CommitData> commits(
-			@Path("owner")	String owner,
-			@Path("repo") String repo
+			@Path("repo") String repo,
+			@Query("page") Integer page
 				);
 		
 	}
@@ -114,7 +93,12 @@ public class GitManager{
 		AllIssues gitHub = adapter.create(AllIssues.class);
 		String owner = url.substring("https://github.com".length() + 1,url.lastIndexOf("/"));
 		String repo =  url.substring(url.lastIndexOf("/") + 1);
-		List<Issue> issues = gitHub.issues(owner, repo);
+		List<Issue> issues = new ArrayList<Issue>();
+		int i = 1;
+		do{
+			issues.addAll(gitHub.issues(owner, repo,i));
+			i++;
+		}while(issues.size() != 0 && issues.size()%100 == 0);
 		return issues;
 	}
 	
@@ -128,22 +112,13 @@ public class GitManager{
 		IssuesOpen gitHub = adapter.create(IssuesOpen.class);
 		String owner = url.substring("https://github.com".length() + 1,url.lastIndexOf("/"));
 		String repo =  url.substring(url.lastIndexOf("/") + 1);
-		List<Issue> issues = gitHub.issues(owner, repo);
+		List<Issue> issues = new ArrayList<Issue>();
+		int i = 1;
+		do{
+			issues.addAll(gitHub.issues(owner, repo,i));
+			i++;
+		}while(issues.size() != 0 && issues.size()%100 == 0);
 		return issues;
-	}
-	
-	/**
-	 * Sert à la récupération de toutes les "Commits" d'un projet.
-	 * @param url
-	 * @return la liste des "Commit"
-	 */
-	private List<CommitData> getCommitData(String url){
-		RestAdapter adapter = new RestAdapter.Builder().setEndpoint("https://api.github.com").build();
-		AllCommits gitHub = adapter.create(AllCommits.class);
-		String owner = url.substring("https://github.com".length() + 1,url.lastIndexOf("/"));
-		String repo =  url.substring(url.lastIndexOf("/") + 1);
-		List<CommitData> commits = gitHub.commits(owner, repo);
-		return commits;
 	}
 	
 	/**
@@ -156,7 +131,12 @@ public class GitManager{
 		IssuesClose gitHub = adapter.create(IssuesClose.class);
 		String owner = url.substring("https://github.com".length() + 1,url.lastIndexOf("/"));
 		String repo =  url.substring(url.lastIndexOf("/") + 1);
-		List<Issue> issues = gitHub.issues(owner, repo);
+		List<Issue> issues = new ArrayList<Issue>();
+		int i=1;
+		do{
+			issues.addAll(gitHub.issues(owner, repo,i));
+			i++;
+		}while(issues.size() != 0 && issues.size()%100  == 0);
 		return issues;
 	}
 	
@@ -165,12 +145,12 @@ public class GitManager{
 	 * @param url
 	 * @return la liste des contributeurs
 	 */
-	private List<String> getCommiter(String url){
+	private List<String> getContributor(String url){
 		List<String> names = new ArrayList<String>();
-		List<CommitData> commits = getCommitData(url);
-		for(CommitData cd : commits){
-			if(!names.contains(cd.commit.committer.name)){
-				names.add(cd.commit.committer.name);
+		List<Issue> issues = getIssuesClose(url);
+		for(Issue issue : issues){
+			if(!names.contains(issue.user.login)){
+				names.add(issue.user.login);
 			}
 		}
 		return names;
@@ -180,34 +160,42 @@ public class GitManager{
 	 * @param url
 	 * @return La liste des Issues avec la date de creation
 	 */
-	public DataSeries getIssuesStats(String url){
-		List<Issue> issues = getIssues(url);
-		DataSeries resultat = new DataSeries("Nombre d'issues ouvertes");
-		Collections.sort(issues);
-		for (int i = 0; i < issues.size(); i++){
-			int nb_issue = i + 1;
-			/*
-			 * soustrait les issue fermée. 
-			for(Issue is : issues){
-				if(is.closed_at != null &&  is.closed_at.compareTo(issues.get(i).created_at) < 0){
-					nb_issue--;
+	public List<DataSeries> getIssuesStats(List<String> urls){
+		List<DataSeries> resultats = new ArrayList<DataSeries>();
+		for(String url : urls){
+			List<Issue> issues = getIssues(url);
+			DataSeries resultat = new DataSeries(url.substring(url.lastIndexOf("/") + 1));
+			Collections.sort(issues);
+			for (int i = 0; i < issues.size(); i++){
+				int nb_issue = i + 1;
+				for(Issue is : issues){
+					if(is.closed_at != null &&  is.closed_at.compareTo(issues.get(i).created_at) < 0){
+						nb_issue--;
+					}
 				}
-			}*/
-			resultat.add(new DataSeriesItem(issues.get(i).created_at, nb_issue));
+				resultat.add(new DataSeriesItem(issues.get(i).created_at, nb_issue));
+			}
+			resultats.add(resultat);
 		}
-		return resultat;
+		return resultats;
 	}
 	
 	/**
 	 * @param url
 	 * @return Le nombre d'issue fermée et ouverte
 	 */
-	public DataSeries getIssueByStates(String url){
+	public DataSeries getIssueByStates(List<String> urls){
 		DataSeries resultat = new DataSeries("Issues");
-		List<Issue> issues = getIssuesOpen(url);
-		resultat.add(new DataSeriesItem("Open", issues.size()));
-		issues = getIssuesClose(url);
-		resultat.add(new DataSeriesItem("Close", issues.size()));
+		int open = 0;
+		int close = 0;
+		for(String url : urls){
+			List<Issue> issues = getIssuesOpen(url);
+			open += issues.size();
+			issues = getIssuesClose(url);
+			close += issues.size();
+		}
+		resultat.add(new DataSeriesItem("Open", open));
+		resultat.add(new DataSeriesItem("Close", close));
 		return resultat;
 	}
 	
@@ -215,47 +203,51 @@ public class GitManager{
 	 * @param url
 	 * @return le nombre de commit en fonction du temps (commit/jours).
 	 */
-	public DataSeries getProjectVelocity(String url){
-		DataSeries resultat = new DataSeries("Nombres de commits");
-		List<CommitData> commits = getCommitData(url);
-		for(CommitData cd1 : commits){
-			Date date1 = new Date(cd1.commit.committer.date.getYear(), cd1.commit.committer.date.getMonth(), cd1.commit.committer.date.getDate());
-				int count = 1;
-				for(CommitData cd2 : commits){
-					Date date2 = new Date(cd2.commit.committer.date.getYear(), cd2.commit.committer.date.getMonth(), cd2.commit.committer.date.getDate());					
-					if (date1.equals(date2)){
-						count++;
-					}
+	public List<DataSeries> getProjectVelocity(List<String> urls){
+		List<DataSeries> resultats = new ArrayList<DataSeries>();
+		for(String url : urls){
+			DataSeries resultat = new DataSeries(url.substring(url.lastIndexOf("/") + 1));
+			List<Issue> commits = getIssuesClose(url);
+			for(Issue cd1 : commits){
+				Date date1 = new Date(cd1.closed_at.getYear(), cd1.closed_at.getMonth(), cd1.closed_at.getDate());
+					int count = 1;
+					for(Issue cd2 : commits){
+						Date date2 = new Date(cd2.closed_at.getYear(), cd2.closed_at.getMonth(), cd2.closed_at.getDate());					
+						if (date1.equals(date2)){
+							count++;
+						}
+				}
+				resultat.add(new DataSeriesItem(date1, count));
 			}
-			resultat.add(new DataSeriesItem(date1, count));
+			resultats.add(resultat);
 		}
-		return resultat;
+		return resultats;
 	}
 	
 	/**
 	 * @param url
-	 * @return une liste de commit en fonction du temps (commit/jours) pour chaque contributeurs
+	 * @return une liste de issue en fonction du contributeur pour chaque projet
 	 */
-	public List<DataSeries> getProjectVelocityByCommiter(String url){
+	public List<DataSeries> getProjectVelocityByCommiter(ArrayList<String> urls){
 		List<DataSeries> resultats = new ArrayList<DataSeries>();
-		List<CommitData> commits = getCommitData(url);
-		List<String> names = getCommiter(url);
-		for(String name : names){
-			DataSeries resultat = new DataSeries(name);
-			for(CommitData cd1 : commits){
-				if(cd1.commit.committer.name.equals(name)){
-					Date date1 = new Date(cd1.commit.committer.date.getYear(), cd1.commit.committer.date.getMonth(), cd1.commit.committer.date.getDate());
-						int count = 1;
-						for(CommitData cd2 : commits){
-							Date date2 = new Date(cd2.commit.committer.date.getYear(), cd2.commit.committer.date.getMonth(), cd2.commit.committer.date.getDate());					
-							if (date1.equals(date2) && cd2.commit.committer.name.equals(name)){
-								count++;
-							}
-					}
-					resultat.add(new DataSeriesItem(date1, count));
-				}
+		List<String> users = new ArrayList<String>();
+		for(String url : urls){
+			for(String user : getContributor(url)){
+				if(!users.contains(user))
+					users.add(user);
 			}
-			resultats.add(resultat);
+		}
+		for(String user : users){
+			DataSeries series = new DataSeries(user);
+			for(String url : urls){
+				int cpt = 0;
+				for(Issue issue : getIssuesClose(url)){
+					if(issue.user.login.equals(user))
+						cpt++;
+				}
+				series.add(new DataSeriesItem(url.substring(url.lastIndexOf("/") + 1), cpt));
+			}
+			resultats.add(series);
 		}
 		return resultats;
 	}
